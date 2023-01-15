@@ -1,87 +1,102 @@
 ﻿using Football.Application.DataTransferObjects.Users;
+using Football.Application.Extensions;
+using Football.Application.Models;
 using Football.Domain.Entities;
 using Football.Infrastructure.Repositories.UserRepositories;
+using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore.Query.Internal;
 
 namespace Football.Application.Services.UserServices
 {
-    public class UserServices : IUserServices
+    public partial class UserServices : IUserServices
     {
-        /// <summary>
-        /// Constructor
-        /// </summary>
+        #region C T O R
         private readonly IUsersFactory usersFactory;
         private readonly IUserRepositiory userRepository;
-        public UserServices(IUsersFactory usersFactory, IUserRepositiory userRepository)
+        private readonly IHttpContextAccessor httpContextAccessor;
+        public UserServices(IUsersFactory usersFactory, IUserRepositiory userRepository, IHttpContextAccessor httpContextAccessor)
         {
             this.usersFactory = usersFactory;
             this.userRepository = userRepository;
+            this.httpContextAccessor = httpContextAccessor;
         }
+        #endregion
 
         /// <summary>
-        /// Create users
+        /// Create storageUser
         /// </summary>
-        /// <param name="userForCreationDto"></param>
-        /// <returns></returns>
         public async ValueTask<UsersDTO> CreateUserAsync(UserForCreationDto userForCreationDto)
         {
+            ValidateUserForCreationDto(userForCreationDto);
+
             var newUser = this.usersFactory.MapToUser(userForCreationDto);
 
             var addedUser = await this.userRepository.InsertAsync(newUser);
 
             return this.usersFactory.MapToUserDto(addedUser);
-
         }
 
         /// <summary>
-        /// get users and user that by id
+        /// Get storageUser and storageUser that by id
         /// </summary>
-        /// <returns></returns>
-        public IQueryable<UsersDTO> RetrieveUsers()
+        public IQueryable<UsersDTO> RetrieveUsers(QueryParametr queryParametr)
         {
-            var users = this.userRepository.SelectAll();
+            var users = this.userRepository
+                .SelectAll()
+                .ToPagesList(
+                context: this.httpContextAccessor.HttpContext,
+                pageSize: queryParametr.Page.Size,
+                pageIndex: queryParametr.Page.Index);
 
             return 
                 users.Select(user => this.usersFactory.MapToUserDto(user));
         }
         public async ValueTask<UsersDTO> RetrieveUserByIdAsync(Guid userId)
         {
-            var users = await this.userRepository.SelectByIdWithDetaialsAsync(
+            ValidateUserId(userId);
+
+            var storageUsers = await this.userRepository.SelectByIdWithDetaialsAsync(
                 expression: user => user.Id == userId,
                 includes: new string[] { nameof(Users.Clubs) });
 
-            return this.usersFactory.MapToUserDto(users);
+            ValidationsStorageUser(storageUsers, userId);
+
+            return 
+                this.usersFactory.MapToUserDto(storageUsers);
         }
 
         /// <summary>
-        /// Modifiyed users
+        /// Modifiyed storageUser
         /// </summary>
-        /// <param name="userForModificationDto"></param>
-        /// <returns></returns>
-        /// <exception cref="NotImplementedException"></exception>
-        public async ValueTask<UsersDTO> ModifyUserAsync(
-            UserForModificationDto userForModificationDto)
+        public async ValueTask<UsersDTO> ModifyUserAsync(UserForModificationDto userForModificationDto)
         {
-            var users = await this.userRepository.SelectByIdWithDetaialsAsync(
+            ValidateUserForModifiydDto(userForModificationDto);
+
+            var storageUser = await this.userRepository.SelectByIdWithDetaialsAsync(
                 expression: user => user.Id == userForModificationDto.userId,
                 includes: new string[] { nameof(Users.Clubs) });
 
-            this.usersFactory.MapToUser(users, userForModificationDto);
+            ValidationsStorageUser(storageUser, userForModificationDto.userId);
 
-            var modifyuser = await this.userRepository.UpdateAsync(users);
+            this.usersFactory.MapToUser(storageUser, userForModificationDto);
+
+            var modifyuser = await this.userRepository.UpdateAsync(storageUser);
 
             return this.usersFactory.MapToUserDto(modifyuser);
         }
 
         /// <summary>
-        /// Remove users
+        /// Remove storageUser
         /// </summary>
-        /// <param name="userId"></param>
-        /// <returns></returns>
         public async ValueTask<UsersDTO> RemoveUserAsync(Guid userId)
         {
-            var user = await this.userRepository.SelectByIdAsync(userId);
+            ValidateUserId(userId);
 
-            var removeUser = await this.userRepository.DeleteAsync(user);
+            var storageUser = await this.userRepository.SelectByIdAsync(userId);
+
+            ValidationsStorageUser(storageUser, userId);
+
+            var removeUser = await this.userRepository.DeleteAsync(storageUser);
 
             return 
                 this.usersFactory.MapToUserDto(removeUser);
