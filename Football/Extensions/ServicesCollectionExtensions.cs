@@ -1,4 +1,6 @@
-﻿using Football.Application.Services.UserServices;
+﻿using FluentValidation;
+using Football.Application.Services.UserServices;
+using Football.Application.Validators.UsersValidation;
 using Football.Infrastructure.Context;
 using Football.Infrastructure.Repositories.UserRepositories;
 using Microsoft.EntityFrameworkCore;
@@ -32,6 +34,8 @@ namespace Football.Api.Extensions
         {
             services.AddScoped<IUserServices, UserServices>();
             services.AddSingleton<IUsersFactory, UserFactory>();
+
+            services.AddHttpContextAccessor();
 
             return services;
         }
