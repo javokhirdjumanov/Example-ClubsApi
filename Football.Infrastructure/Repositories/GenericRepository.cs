@@ -39,10 +39,12 @@ namespace Football.Infrastructure.Repositories
         {
             return this.context.Set<TEntity>();
         }
+
         public ValueTask<TEntity> SelectByIdAsync(TKey id)
         {
             return this.context.Set<TEntity>().FindAsync(id);
         }
+
         public async ValueTask<TEntity> SelectByIdWithDetaialsAsync(
             Expression<Func<TEntity, bool>> expression, string[] includes = null)
         {

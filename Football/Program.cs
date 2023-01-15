@@ -1,4 +1,5 @@
 using Football.Api.Extensions;
+using Football.Api.Middlewares;
 
 namespace Football
 {
@@ -27,8 +28,11 @@ namespace Football
 
             app.UseHttpsRedirection();
 
+            //app.UseAuthentication();
+
             app.UseAuthorization();
 
+            app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
 
             app.MapControllers();
 

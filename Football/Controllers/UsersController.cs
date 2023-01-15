@@ -1,4 +1,5 @@
 ﻿using Football.Application.DataTransferObjects.Users;
+using Football.Application.Models;
 using Football.Application.Services.UserServices;
 using Microsoft.AspNetCore.Mvc;
 
@@ -22,9 +23,9 @@ namespace Football.Api.Controllers
             return Created("", createUser);
         }
         [HttpGet]
-        public IActionResult GetUsers()
+        public IActionResult GetUsers([FromQuery] QueryParametr queryParametr)
         {
-            var users = this.userServices.RetrieveUsers();
+            var users = this.userServices.RetrieveUsers(queryParametr);
 
             return Ok(users);
         }
