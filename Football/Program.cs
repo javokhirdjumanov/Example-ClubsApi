@@ -11,6 +11,7 @@ namespace Football
 
             builder.Services
                 .AddDbContexts(builder.Configuration)
+                .AddAuthentication(builder.Configuration)
                 .AddInfrastructure()
                 .AddAplications();
 
@@ -28,7 +29,7 @@ namespace Football
 
             app.UseHttpsRedirection();
 
-            //app.UseAuthentication();
+            app.UseAuthentication();
 
             app.UseAuthorization();
 
