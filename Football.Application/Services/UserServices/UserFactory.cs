@@ -1,5 +1,6 @@
 ﻿using Football.Application.DataTransferObjects.Users;
 using Football.Domain.Entities;
+using Football.Domain.Enums;
 
 namespace Football.Application.Services.UserServices
 {
@@ -25,7 +26,8 @@ namespace Football.Application.Services.UserServices
                     ClubName = userForCreationDto.clubname,
                     ClubCountry = userForCreationDto.clubcountry,
                     ClubCity = userForCreationDto.clubcity,
-                }
+                },
+                Role = UserRoles.FootballPlayers
             };
         }
 

@@ -10,7 +10,10 @@ namespace Football.Application.Services.UserServices
 {
     public partial class UserServices : IUserServices
     {
-        #region C T O R
+
+        /// <summary>
+        /// C O N S T R U C T O R
+        /// </summary>
         private readonly IUsersFactory usersFactory;
         private readonly IUserRepositiory userRepository;
         private readonly IHttpContextAccessor httpContextAccessor;
@@ -20,10 +23,9 @@ namespace Football.Application.Services.UserServices
             this.userRepository = userRepository;
             this.httpContextAccessor = httpContextAccessor;
         }
-        #endregion
 
         /// <summary>
-        /// Create storageUser
+        /// C R E A T E     Storage User
         /// </summary>
         public async ValueTask<UsersDTO> CreateUserAsync(UserForCreationDto userForCreationDto)
         {
@@ -37,7 +39,7 @@ namespace Football.Application.Services.UserServices
         }
 
         /// <summary>
-        /// Get storageUser and storageUser that by id
+        /// G E T     Storage User and Storage User that by Id
         /// </summary>
         public IQueryable<UsersDTO> RetrieveUsers(QueryParametr queryParametr)
         {
@@ -66,7 +68,7 @@ namespace Football.Application.Services.UserServices
         }
 
         /// <summary>
-        /// Modifiyed storageUser
+        /// M O D I F I Y T     Storage User
         /// </summary>
         public async ValueTask<UsersDTO> ModifyUserAsync(UserForModificationDto userForModificationDto)
         {
@@ -86,7 +88,7 @@ namespace Football.Application.Services.UserServices
         }
 
         /// <summary>
-        /// Remove storageUser
+        /// R E M O V E     Storage User
         /// </summary>
         public async ValueTask<UsersDTO> RemoveUserAsync(Guid userId)
         {
