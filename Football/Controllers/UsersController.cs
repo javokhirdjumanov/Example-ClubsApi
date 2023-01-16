@@ -30,10 +30,9 @@ namespace Football.Api.Controllers
             return Ok(users);
         }
         [HttpGet("{userId:guid}")]
-        public async ValueTask<ActionResult<UsersDTO>> GetUserByIdAsync(Guid Id)
+        public async ValueTask<ActionResult<UsersDTO>> GetUserByIdAsync(Guid userId)
         {
-            var user = await this.userServices.RetrieveUserByIdAsync(Id);
-
+            var user = await this.userServices.RetrieveUserByIdAsync(userId);
 
             return Ok(user);
         }
