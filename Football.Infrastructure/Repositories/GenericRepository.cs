@@ -8,7 +8,7 @@ namespace Football.Infrastructure.Repositories
         : IGenericRepository<TEntity, TKey> where TEntity : class
     {
         /// <summary>
-        /// contructor
+        /// C O N S T R U C T O R
         /// </summary>
         private readonly AppDbContext context;
         public GenericRepository(AppDbContext context)
@@ -17,10 +17,8 @@ namespace Football.Infrastructure.Repositories
         }
 
         /// <summary>
-        /// Insert user from Database
+        /// I N S E R T   User from Database
         /// </summary>
-        /// <param name="entity"></param>
-        /// <returns></returns>
         public async ValueTask<TEntity> InsertAsync(TEntity entity)
         {
             var entityEntry = await this.context
@@ -32,9 +30,8 @@ namespace Football.Infrastructure.Repositories
         }
 
         /// <summary> 
-        /// get users and user that by Id and with User Details
+        /// G E T   Users and User that by Id and with User Details
         /// </summary>
-        /// <returns></returns>
         public IQueryable<TEntity> SelectAll()
         {
             return this.context.Set<TEntity>();
@@ -59,10 +56,8 @@ namespace Football.Infrastructure.Repositories
         }
 
         /// <summary>
-        /// Update user from Database
+        /// U P D A T E   user from Database
         /// </summary>
-        /// <param name="entity"></param>
-        /// <returns></returns>
         public async ValueTask<TEntity> UpdateAsync(TEntity entity)
         {
             var entityEntry = this.context
@@ -74,10 +69,8 @@ namespace Football.Infrastructure.Repositories
         }
 
         /// <summary>
-        /// Delete user from database
+        /// D E L E T E   User from database
         /// </summary>
-        /// <param name="entity"></param>
-        /// <returns></returns>
         public async ValueTask<TEntity> DeleteAsync(TEntity entity)
         {
             var entityEntry = this.context
@@ -90,9 +83,8 @@ namespace Football.Infrastructure.Repositories
         }
 
         /// <summary>
-        /// save changes
+        /// S A V E   Changes
         /// </summary>
-        /// <returns></returns>
         public async ValueTask<int> SaveChangesAsync() =>
             await this.context.SaveChangesAsync();
     }
