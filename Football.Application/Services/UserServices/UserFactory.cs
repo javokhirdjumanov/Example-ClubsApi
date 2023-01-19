@@ -9,8 +9,6 @@ namespace Football.Application.Services.UserServices
         /// <summary>
         /// Malumotni User tipiga o'girish
         /// </summary>
-        /// <param name="userForCreationDto"></param>
-        /// <returns></returns>
         public Users MapToUser(UserForCreationDto userForCreationDto)
         {
             return new Users
@@ -34,9 +32,6 @@ namespace Football.Application.Services.UserServices
         /// <summary>
         /// User malumotlarini o'zgartirish uchun
         /// </summary>
-        /// <param name="storageUser"></param>
-        /// <param name="userForCreationDto"></param>
-        /// <exception cref="NotImplementedException"></exception>
         public void MapToUser(Users storageUser, UserForModificationDto userForCreationDto)
         {
             storageUser.FirstName = userForCreationDto.firstname ?? storageUser.FirstName;
@@ -53,8 +48,6 @@ namespace Football.Application.Services.UserServices
         /// <summary>
         /// Malumotni userDto tipiga o'girish
         /// </summary>
-        /// <param name="user"></param>
-        /// <returns></returns>
         public UsersDTO MapToUserDto(Users user)
         {
             ClubsDto? clubsDto = default;

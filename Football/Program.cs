@@ -11,7 +11,7 @@ namespace Football
 
             builder.Services
                 .AddDbContexts(builder.Configuration)
-                .AddAuthentication(builder.Configuration)
+                .AddAuthentications(builder.Configuration)
                 .AddInfrastructure()
                 .AddAplications();
 

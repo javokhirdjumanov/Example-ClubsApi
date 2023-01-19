@@ -10,7 +10,6 @@ namespace Football.Application.Services.UserServices
 {
     public partial class UserServices : IUserServices
     {
-
         /// <summary>
         /// C O N S T R U C T O R
         /// </summary>
