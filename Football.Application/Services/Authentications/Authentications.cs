@@ -1,40 +1,134 @@
 ﻿using Football.Application.DataTransferObjects.Authentication;
-using Football.Infrastructure.Authentication;
 using Football.Infrastructure.Repositories.UserRepositories;
+using Football.Infrastructure.Authentication;
 using System.IdentityModel.Tokens.Jwt;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.Extensions.Options;
+using Football.Domain.Exceptions;
+using System.Security.Claims;
+using System.Text;
 
 namespace Football.Application.Services.Authentications;
-public class Authentications : IAuthentication
+public class Authentications : IAuthentications
 {
     /// <summary>
     /// C O N S T R U C T O R
     /// </summary>
     private readonly IUserRepositiory userRepositiory;
     private readonly IJwtTokenHandler jwtTokenHandler;
-    public Authentications(IUserRepositiory userRepositiory, IJwtTokenHandler jwtTokenHandler)
+    private readonly IPasswordHasher passwordHasher;
+    private readonly Jwtoption jwtoption;
+    public Authentications(IUserRepositiory userRepositiory,IJwtTokenHandler jwtTokenHandler, 
+                           IPasswordHasher passwordHasher, IOptions<Jwtoption> option
+    )
     {
         this.userRepositiory = userRepositiory;
         this.jwtTokenHandler = jwtTokenHandler;
+        this.passwordHasher = passwordHasher;
+        this.jwtoption = option.Value;
     }
-
+    
     /// <summary>
-    /// L O G I N
+    /// A C C E S S  token
     /// </summary>
-    public async Task<TokenDto> LoginAsync(AuthenticationsDto authenticationsDto)
+    public async Task<TokenDto> AccessTokenAsync(AuthenticationsDto authenticationsDto)
     {
         var storegeUser = await this.userRepositiory.SelectByIdWithDetaialsAsync(
-            expression: user => 
-            user.Email == authenticationsDto.email && user.PasswordHash == authenticationsDto.password,
-
+            expression: user => user.Email == authenticationsDto.email,
             includes: Array.Empty<string>()
-            );
+        );
+        
+        if (storegeUser is null )
+        {
+            throw new NotFoundExcaptions("User with given credentials not found :(");
+        }
 
-        var token = this.jwtTokenHandler.GenerationJwtToken(storegeUser);
+        if (!this.passwordHasher.Verify(
+            hash: storegeUser.PasswordHash,
+            password: authenticationsDto.password,
+            salt: storegeUser.Salt))
+        {
+            throw new ValidationExceptions("Username or password is not in valid :(");
+        }
+
+        string refreshToken = this.jwtTokenHandler.GenerateRefreshToken();
+
+        storegeUser.UpdateRefreshToken(refreshToken);
+
+        var updateUser = await this.userRepositiory.UpdateAsync(storegeUser);
+
+        var token = this.jwtTokenHandler.GenerationAccessToken(storegeUser);
+
+        var accessToken = this.jwtTokenHandler.GenerationAccessToken(updateUser);
 
         return new TokenDto(
             accessToken: new JwtSecurityTokenHandler().WriteToken(token),
             refleshToken: null,
             expireDate: token.ValidTo
             );
+    }
+
+    /// <summary>
+    /// R E F R E S H  token
+    /// </summary>
+    public async Task<TokenDto> RefreshTokenAsync(RefreshTokenDto refleshTokenDto)
+    {
+        var principal = GetPricipalFromExpiredToken(refleshTokenDto.accessToken);
+
+        var userId = principal.FindFirstValue(CustomClaimNames.Id);
+
+        var storageUser = await this.userRepositiory.SelectByIdAsync(Guid.Parse(userId));
+
+        if(!storageUser.RefreshToken.Equals(refleshTokenDto.refreshToken))
+        {
+            throw new ValidationExceptions("Refresh token is not valid");
+        }
+
+        if(storageUser.RefreshTokenExpireDate <= DateTime.UtcNow)
+        {
+            throw new ValidationExceptions("Refresh token has already been expired");
+        }
+
+        var newAccessToken = this.jwtTokenHandler.GenerationAccessToken(storageUser);
+
+        return new TokenDto(
+            accessToken: new JwtSecurityTokenHandler().WriteToken(newAccessToken),
+            refleshToken: storageUser.RefreshToken,
+            expireDate: newAccessToken.ValidTo);
+    }
+    
+    /// <summary>
+    /// Get Claim Pricipal
+    /// </summary>
+    private ClaimsPrincipal GetPricipalFromExpiredToken(string accessToken)
+    {
+        var tokenValidationParametr = new TokenValidationParameters
+        {
+            ValidateAudience = true,
+            ValidAudience = this.jwtoption.Audience,
+            ValidateIssuer = true,
+            ValidIssuer = this.jwtoption.Issuer,
+            ValidateIssuerSigningKey = true,
+            ValidateLifetime = false,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(this.jwtoption.SecretKey))
+        };
+
+        var tokenHandler = new JwtSecurityTokenHandler();
+
+        var principal = tokenHandler.ValidateToken(
+            token: accessToken,
+            validationParameters: tokenValidationParametr,
+            validatedToken: out SecurityToken securityToken);
+
+        var jwtSecurityToken = securityToken as JwtSecurityToken;
+
+        if (jwtSecurityToken == null || !jwtSecurityToken.Header.Alg.Equals(
+            SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
+        {
+            throw new ValidationExceptions("Invalid token");
+        }
+
+        return principal;
+
     }
 }
