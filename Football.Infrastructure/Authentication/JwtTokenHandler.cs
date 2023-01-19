@@ -2,8 +2,10 @@
 using Football.Domain.Enums;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace Football.Infrastructure.Authentication;
@@ -19,9 +21,9 @@ public class JwtTokenHandler : IJwtTokenHandler
     }
 
     /// <summary>
-    /// Generation Jwt Token
+    /// Generation Access Token
     /// </summary>
-    public JwtSecurityToken GenerationJwtToken(Users user)
+    public JwtSecurityToken GenerationAccessToken(Users user)
     {
         var claims = new List<Claim>()
         {
@@ -33,7 +35,7 @@ public class JwtTokenHandler : IJwtTokenHandler
         var authSingningKey = new SymmetricSecurityKey(
             Encoding.UTF8.GetBytes(this.jwtoption.SecretKey));
 
-        var token = new JwtSecurityToken(
+        var accessToken = new JwtSecurityToken(
             issuer: this.jwtoption.Issuer,
             audience: this.jwtoption.Audience,
             expires: DateTime.UtcNow.AddMinutes(this.jwtoption.ExpirationInMinutes),
@@ -43,6 +45,20 @@ public class JwtTokenHandler : IJwtTokenHandler
                 algorithm: SecurityAlgorithms.HmacSha256)
             );
 
-        return token;
+        return accessToken;
+    }
+
+    /// <summary>
+    /// Generation Refresh Token
+    /// </summary>
+    public string GenerateRefreshToken()
+    {
+        byte[] bytes = new byte[64];
+
+        using var randomGenerate = RandomNumberGenerator.Create();
+
+        randomGenerate.GetBytes(bytes);
+
+        return Convert.ToBase64String(bytes);
     }
 }
