@@ -1,5 +1,4 @@
-﻿using FluentValidation;
-using Football.Application.Services.Authentications;
+﻿using Football.Application.Services.Authentications;
 using Football.Application.Services.UserServices;
 using Football.Infrastructure.Authentication;
 using Football.Infrastructure.Context;
@@ -37,35 +36,36 @@ namespace Football.Api.Extensions
         }
 
         /// <summary>
+        /// A D D   Aplications  to DI Container
+        /// </summary>
+        public static IServiceCollection AddAplications(this IServiceCollection services)
+        {
+            services.AddScoped<IUserServices, UserServices>();
+
+            services.AddSingleton<IUsersFactory, UserFactory>();
+
+            services.AddScoped<IAuthentications, Authentications>();
+
+            services.AddHttpContextAccessor();
+
+            return services;
+        }
+        /// <summary>
         /// A D D    Infrastructure   to DI Container
         /// </summary>
         public static IServiceCollection AddInfrastructure(this IServiceCollection services)
         {
             services.AddScoped<IUserRepositiory, UserRepository>();
             services.AddTransient<IJwtTokenHandler, JwtTokenHandler>();
-
+            services.AddSingleton<IPasswordHasher, PasswordHasher>();
             return services;
         }
 
-        /// <summary>
-        /// A D D   Aplications     to DI Container
-        /// </summary>
-        public static IServiceCollection AddAplications(this IServiceCollection services)
-        {
-            services.AddScoped<IUserServices, UserServices>();
-            services.AddSingleton<IUsersFactory, UserFactory>();
-
-            services.AddScoped<IAuthentication, Authentications>();
-
-            services.AddHttpContextAccessor();
-
-            return services;
-        }
 
         /// <summary>
-        /// A D D   Authentication     to DI Container
+        /// A D D   Authentication  to DI Container
         /// </summary>
-        public static IServiceCollection AddAuthentication(this IServiceCollection services,IConfiguration configuration)
+        public static IServiceCollection AddAuthentications(this IServiceCollection services,IConfiguration configuration)
         {
             services.AddAuthentication(options =>
             {
