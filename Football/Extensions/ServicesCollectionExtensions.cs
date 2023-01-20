@@ -1,22 +1,24 @@
-﻿using Football.Application.Services.Authentications;
+﻿using Football.Infrastructure.Repositories.UserRepositories;
+using Football.Application.Services.Authentications;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Football.Application.Services.UserServices;
 using Football.Infrastructure.Authentication;
 using Football.Infrastructure.Context;
-using Football.Infrastructure.Repositories.UserRepositories;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using Serilog;
+
 namespace Football.Api.Extensions
 {
     public static class ServicesCollectionExtensions
     {
         /// <summary>
-        /// A D D    Contexts     to DI Container
+        /// Contexts     to DI Container
         /// </summary>
-        public static IServiceCollection AddDbContexts(
-            this IServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection AddDbContexts(this IServiceCollection services, 
+            IConfiguration configuration)
         {
             var connectionString = configuration.GetConnectionString("SqlServer");
 
@@ -36,7 +38,7 @@ namespace Football.Api.Extensions
         }
 
         /// <summary>
-        /// A D D   Aplications  to DI Container
+        /// Aplications  to DI Container
         /// </summary>
         public static IServiceCollection AddAplications(this IServiceCollection services)
         {
@@ -50,8 +52,9 @@ namespace Football.Api.Extensions
 
             return services;
         }
+        
         /// <summary>
-        /// A D D    Infrastructure   to DI Container
+        /// Infrastructure   to DI Container
         /// </summary>
         public static IServiceCollection AddInfrastructure(this IServiceCollection services)
         {
@@ -61,11 +64,11 @@ namespace Football.Api.Extensions
             return services;
         }
 
-
         /// <summary>
-        /// A D D   Authentication  to DI Container
+        /// Authentication  to DI Container
         /// </summary>
-        public static IServiceCollection AddAuthentications(this IServiceCollection services,IConfiguration configuration)
+        public static IServiceCollection AddAuthentications(this IServiceCollection services,
+            IConfiguration configuration)
         {
             services.AddAuthentication(options =>
             {
@@ -89,6 +92,10 @@ namespace Football.Api.Extensions
 
             return services;
         }
+        
+        /// <summary>
+        /// Swagger Helper  to DI Container
+        /// </summary>
         private static void AddSwaggerService(this IServiceCollection services)
         {
             services.AddSwaggerGen(c =>
@@ -119,6 +126,23 @@ namespace Football.Api.Extensions
                 }
             });
             });
+        }
+
+        /// <summary>
+        /// Add  Logging
+        /// </summary>
+        public  static WebApplicationBuilder AddLoggers(this WebApplicationBuilder builder, 
+            IConfiguration configuration)
+        {
+            var logger = new LoggerConfiguration()
+                .ReadFrom.Configuration(configuration)
+                .Enrich.FromLogContext()
+                .CreateLogger();
+
+            builder.Logging.ClearProviders();
+            builder.Logging.AddSerilog(logger);
+
+            return builder;
         }
     }
 }
