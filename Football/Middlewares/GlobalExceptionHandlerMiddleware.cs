@@ -1,5 +1,6 @@
 ﻿using FluentValidation.TestHelper;
 using Football.Domain.Exceptions;
+using Microsoft.AspNetCore.Mvc;
 using System.Net;
 using System.Text.Json;
 
@@ -12,7 +13,8 @@ public class GlobalExceptionHandlerMiddleware
         _next = next;
     }
 
-    public async Task InvokeAsync(HttpContext context)
+    public async Task InvokeAsync(HttpContext context,
+        [FromServices] ILogger<GlobalExceptionHandlerMiddleware> logger)
     {
         try
         {
@@ -21,6 +23,8 @@ public class GlobalExceptionHandlerMiddleware
         catch(ValidationExceptions validationException)
         {
             context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+
+            logger.LogError(exception: validationException, message: validationException.Message);
 
             await HandleException(context, validationException.Message);
         }
@@ -33,10 +37,14 @@ public class GlobalExceptionHandlerMiddleware
                 notfoundException.Message,
             });
 
+            logger.LogError(exception: notfoundException, message: notfoundException.Message);
+
             await HandleException(context, serilizedOblect);
         }
         catch (Exception exception)
         {
+            logger.LogError(exception: exception, message: exception.Message);
+
             await HandleException(context, exception.Message);
         }
     }
