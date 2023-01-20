@@ -1,43 +1,44 @@
 using Football.Api.Extensions;
 using Football.Api.Middlewares;
 
-namespace Football
+namespace Football;
+public class Program
 {
-    public class Program
+    public static void Main(string[] args)
     {
-        public static void Main(string[] args)
+        var builder = WebApplication.CreateBuilder(args);
+
+        builder.AddLoggers(builder.Configuration);
+
+        builder.Services
+            .AddDbContexts(builder.Configuration)
+            .AddAuthentications(builder.Configuration)
+            .AddInfrastructure()
+            .AddAplications();
+
+        builder.Services.AddControllers();
+
+        builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddSwaggerGen();
+
+        var app = builder.Build();
+
+        if (app.Environment.IsDevelopment())
         {
-            var builder = WebApplication.CreateBuilder(args);
-
-            builder.Services
-                .AddDbContexts(builder.Configuration)
-                .AddAuthentications(builder.Configuration)
-                .AddInfrastructure()
-                .AddAplications();
-
-            builder.Services.AddControllers();
-            builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
-
-            var app = builder.Build();
-
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseSwagger();
-                app.UseSwaggerUI();
-            }
-
-            app.UseHttpsRedirection();
-
-            app.UseAuthentication();
-
-            app.UseAuthorization();
-
-            app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
-
-            app.MapControllers();
-
-            app.Run();
+            app.UseSwagger();
+            app.UseSwaggerUI();
         }
+
+        app.UseHttpsRedirection();
+
+        app.UseAuthentication();
+
+        app.UseAuthorization();
+
+        app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
+
+        app.MapControllers();
+
+        app.Run();
     }
 }
