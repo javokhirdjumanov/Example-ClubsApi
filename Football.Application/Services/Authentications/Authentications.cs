@@ -9,7 +9,7 @@ using System.Security.Claims;
 using System.Text;
 
 namespace Football.Application.Services.Authentications;
-public class Authentications : IAuthentications
+public partial class Authentications : IAuthentications
 {
     /// <summary>
     /// C O N S T R U C T O R
@@ -19,15 +19,14 @@ public class Authentications : IAuthentications
     private readonly IPasswordHasher passwordHasher;
     private readonly Jwtoption jwtoption;
     public Authentications(IUserRepositiory userRepositiory,IJwtTokenHandler jwtTokenHandler, 
-                           IPasswordHasher passwordHasher, IOptions<Jwtoption> option
-    )
+                           IPasswordHasher passwordHasher, IOptions<Jwtoption> option)
     {
         this.userRepositiory = userRepositiory;
         this.jwtTokenHandler = jwtTokenHandler;
         this.passwordHasher = passwordHasher;
         this.jwtoption = option.Value;
     }
-    
+
     /// <summary>
     /// A C C E S S  token
     /// </summary>
@@ -37,11 +36,8 @@ public class Authentications : IAuthentications
             expression: user => user.Email == authenticationsDto.email,
             includes: Array.Empty<string>()
         );
-        
-        if (storegeUser is null )
-        {
-            throw new NotFoundExcaptions("User with given credentials not found :(");
-        }
+
+        ValidationForStorageUser(user: storegeUser, userId: storegeUser.Id);
 
         if (!this.passwordHasher.Verify(
             hash: storegeUser.PasswordHash,
@@ -71,23 +67,17 @@ public class Authentications : IAuthentications
     /// <summary>
     /// R E F R E S H  token
     /// </summary>
-    public async Task<TokenDto> RefreshTokenAsync(RefreshTokenDto refleshTokenDto)
+    public async Task<TokenDto> RefreshTokenAsync(RefreshTokenDto refreshTokenDto)
     {
-        var principal = GetPricipalFromExpiredToken(refleshTokenDto.accessToken);
+        var principal = GetPricipalFromExpiredToken(refreshTokenDto.accessToken);
 
         var userId = principal.FindFirstValue(CustomClaimNames.Id);
 
         var storageUser = await this.userRepositiory.SelectByIdAsync(Guid.Parse(userId));
 
-        if(!storageUser.RefreshToken.Equals(refleshTokenDto.refreshToken))
-        {
-            throw new ValidationExceptions("Refresh token is not valid");
-        }
+        ValidationEqualRefreshToken(storageUser: storageUser, refreshTokenDto: refreshTokenDto);
 
-        if(storageUser.RefreshTokenExpireDate <= DateTime.UtcNow)
-        {
-            throw new ValidationExceptions("Refresh token has already been expired");
-        }
+        ValidationExpireDateForRefreshToken(storageUser: storageUser);
 
         var newAccessToken = this.jwtTokenHandler.GenerationAccessToken(storageUser);
 
@@ -129,6 +119,5 @@ public class Authentications : IAuthentications
         }
 
         return principal;
-
     }
 }
