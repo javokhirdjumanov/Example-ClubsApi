@@ -38,6 +38,7 @@ namespace Football.Api.Controllers
 
             return Ok(user);
         }
+        [Authorize]
         [HttpPut]
         public async ValueTask<ActionResult<UsersDTO>> PutUsersAsync(
             UserForModificationDto userForModificationDto)
@@ -46,6 +47,7 @@ namespace Football.Api.Controllers
 
             return Ok(modifyuser);
         }
+        [Authorize]
         [HttpDelete("{userId:guid}")]
         public async ValueTask<ActionResult<UsersDTO>> DeleteUserAsync(
             Guid userId)
