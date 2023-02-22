@@ -30,7 +30,6 @@ namespace Football.Api.Controllers
 
             return Ok(users);
         }
-        [Authorize]
         [HttpGet("{userId:guid}")]
         public async ValueTask<ActionResult<UsersDTO>> GetUserByIdAsync(Guid userId)
         {

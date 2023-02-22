@@ -8,9 +8,6 @@ using System.Text.Json;
 namespace Football.Application.Services.UserServices;
 public partial class UserServices
 {
-    /// <summary>
-    /// Validation for userId that userid is null
-    /// </summary>
     public void ValidateUserId(Guid userId)
     {
         if (userId == default)
@@ -18,10 +15,6 @@ public partial class UserServices
             throw new ValidationExceptions($"The given userId is invalid: {userId}");
         }
     }
-
-    /// <summary>
-    /// Validation for storage user is null
-    /// </summary>
     public void ValidationsStorageUser(Users storageUser, Guid userId)
     {
         if (storageUser == null)
@@ -29,10 +22,6 @@ public partial class UserServices
             throw new NotFoundExcaptions($"Couldn't find user with given id: {userId}");
         }
     }
-
-    /// <summary>
-    /// If it doesn't pass Validation on creation
-    /// </summary>
     public void ValidateUserForCreationDto(UserForCreationDto userForCreationDto)
     {
         var validateResult = 
@@ -40,20 +29,12 @@ public partial class UserServices
 
         ThrowValidationExceptionIfValidationIsInvalid(validateResult);
     }
-
-    /// <summary>
-    /// If it doesn't pass Validation on update
-    /// </summary>
     public void ValidateUserForModifiydDto(UserForModificationDto userForModificationDto)
     {
         var validationResult = new UserForModificationDtoValidation().Validate(userForModificationDto);
 
         ThrowValidationExceptionIfValidationIsInvalid(validationResult);
     }
-
-    /// <summary>
-    /// If it doesn't pass Validation of Base
-    /// </summary>
     private static void ThrowValidationExceptionIfValidationIsInvalid(ValidationResult validationResult)
     {
         if(validationResult.IsValid) 
