@@ -29,12 +29,14 @@ public partial class UserServices
 
         ThrowValidationExceptionIfValidationIsInvalid(validateResult);
     }
+
     public void ValidateUserForModifiydDto(UserForModificationDto userForModificationDto)
     {
         var validationResult = new UserForModificationDtoValidation().Validate(userForModificationDto);
 
         ThrowValidationExceptionIfValidationIsInvalid(validationResult);
     }
+
     private static void ThrowValidationExceptionIfValidationIsInvalid(ValidationResult validationResult)
     {
         if(validationResult.IsValid) 

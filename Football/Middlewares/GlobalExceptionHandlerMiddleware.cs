@@ -1,5 +1,4 @@
-﻿using FluentValidation.TestHelper;
-using Football.Domain.Exceptions;
+﻿using Football.Domain.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 using System.Text.Json;
